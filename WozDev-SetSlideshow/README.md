@@ -21,3 +21,13 @@ Assembly was targeted to net48 and intended to be used in a PowerShell 5.1 conso
   - System.Memory
   - System.Numerics.Vectors
   - System.Runtime.CompilerServices.Unsafe
+
+
+```powershell
+
+[Vanara.Windows.Shell.WallpaperManager]
+
+```
+
+
+
