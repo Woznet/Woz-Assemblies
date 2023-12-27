@@ -32,6 +32,8 @@ services:
       PWP__ENABLE_FILE_PUSHES: "true"
       PWP__FILES__STORAGE: "local"
       PWP__FILES__ENABLE_BLUR: "true"
+
+      PWP__BRAND__DARK_LOGO: "/logos/Logo-AceCarp-Dark.png"
     ports:
       - "5100:5100"
     depends_on:
@@ -53,9 +55,10 @@ services:
 
     #
     # Uncomment the following lines to mount a volume.
-    # volumes:
+    volumes:
     #   # Example of a persistent volume for the storage directory (file uploads)
-    #   - /path/to/directory:/opt/PasswordPusher/storage:rw
+     - "E:/dev/mydocker/storage:/opt/PasswordPusher/storage:rw"
+     - "E:/dev/mydocker/logos:/opt/PasswordPusher/public/logos:r"
     #
     # Or you could override a single file in the container with a bind mount:
     # volumes:
