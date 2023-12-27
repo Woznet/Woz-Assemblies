@@ -33,7 +33,7 @@ services:
       PWP__FILES__STORAGE: "local"
       PWP__FILES__ENABLE_BLUR: "true"
 
-      PWP__BRAND__DARK_LOGO: "/logos/Logo-AceCarp-Dark.png"
+      PWP__BRAND__DARK_LOGO: "/logos/Logo-AceCarp-Dark-260px.png"
     ports:
       - "5100:5100"
     depends_on:
