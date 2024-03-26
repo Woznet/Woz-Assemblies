@@ -14,9 +14,6 @@ If (-not ([System.Security.Principal.WindowsPrincipal][System.Security.Principal
 ##############
 $DeployTemp = [System.IO.Path]::Combine('C:\temp', 'DeployTemp')
 
-# $DeployTemp = [System.IO.Path]::Combine($env:TEMP, 'DeployTemp')
-# $null = New-Item -Path $DeployTemp -ItemType Directory -Force
-
 $TranscriptPath = [System.IO.Path]::Combine($DeployTemp, 'Config-NewComp-{0}.log' -f [datetime]::Now.ToString('yyyy-MM-dd_HH-mm-ss'))
 Write-Verbose 'Starting Transcript'
 Start-Transcript -Path $TranscriptPath -IncludeInvocationHeader
