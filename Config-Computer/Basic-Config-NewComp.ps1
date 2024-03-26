@@ -65,7 +65,8 @@ Write-Verbose -Message 'Installing NuGet PackageProvider'
 $null = Install-PackageProvider -Name NuGet -Force
 
 Write-Verbose -Message 'Installing Modules: PackageManagement,PowerShellGet,PSReadLine,WozTools'
-$ModsToInstall = 'PackageManagement', 'PowerShellGet', 'WozTools', 'PSWindowsUpdate', 'PSReadLine', 'Az.Accounts', 'Az.Tools.Predictor', 'Microsoft.PowerShell.PSResourceGet', 'ThreadJob'
+# $ModsToInstall = 'PackageManagement', 'PowerShellGet', 'WozTools', 'PSWindowsUpdate', 'PSReadLine', 'Az.Accounts', 'Az.Tools.Predictor', 'Microsoft.PowerShell.PSResourceGet', 'ThreadJob'
+$ModsToInstall = 'PackageManagement', 'PowerShellGet', 'WozTools', 'PSWindowsUpdate', 'PSReadLine', 'Az.Accounts', 'Az.Tools.Predictor', 'Microsoft.PowerShell.PSResourceGet'
 if (Get-Command -Name Find-PSResource -ErrorAction Ignore) {
     if (-not (Get-PSRepository -Name PSGallery -ErrorAction Ignore)) { $null = Register-PSResourceRepository -PSGallery -Trusted -PassThru -Force }
     Set-PSResourceRepository -Name PSGallery -Trusted
@@ -155,10 +156,7 @@ if (-not (Test-Path 'C:\Program Files\Google\Chrome\Application\chrome.exe')) {
 }
 
 #region Download Wallpaper
-Write-Verbose -Message 'Setting DisableFirstRunCustomize'
-$KeyPath = 'registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\'
-if (-not (Test-Path -Path $KeyPath)) { $null = New-Item -Path $KeyPath -Force }
-$null = New-ItemProperty -Path 'registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\' -Name DisableFirstRunCustomize -PropertyType DWORD -Value 1 -Force
+
 function Invoke-DownloadWallpaper {
     [CmdletBinding()]
     param(
@@ -192,6 +190,20 @@ function Invoke-DownloadWallpaper {
         Write-Progress @Argument
     }
 
+    if (-not (Get-Command Start-ThreadJob -ErrorAction Ignore)) {
+        Write-Verbose 'Missing ThreadJob module with the Start-ThreadJob command'
+        Write-Verbose 'Attempting to download the ThreadJob module'
+
+        $webclient = [System.Net.WebClient]::new()
+        $ThreadJobUrl = 'https://psg-prod-eastus.azureedge.net/packages/threadjob.2.0.3.nupkg'
+        $ThreadJobNupkg = [System.IO.Path]::Combine($DeployTemp, ([System.IO.Path]::GetFileName($ThreadJobUrl)))
+        $ThreadJobExtract = [System.IO.Path]::Combine($DeployTemp, [System.IO.Path]::GetFileNameWithoutExtension($ThreadJobUrl))
+        $ThreadJobPSD1 = [System.IO.Path]::Combine($ThreadJobExtract, 'ThreadJob.psd1')
+
+        $webclient.DownloadFile($ThreadJobUrl, $ThreadJobNupkg)
+        Expand-Archive -Path $ThreadJobNupkg -DestinationPath $ThreadJobExtract -Force
+        Import-Module $ThreadJobPSD1
+    }
 
     $KeyPath = 'registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\'
     if (-not (Test-Path -Path $KeyPath)) { $null = New-Item -Path $KeyPath -Force }
