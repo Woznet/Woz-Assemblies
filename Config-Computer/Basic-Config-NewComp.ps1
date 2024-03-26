@@ -197,15 +197,17 @@ function Invoke-DownloadWallpaper {
         Write-Verbose 'Missing ThreadJob module with the Start-ThreadJob command'
         Write-Verbose 'Attempting to download the ThreadJob module'
 
-        $webclient = [System.Net.WebClient]::new()
+        $WebClient = [System.Net.WebClient]::new()
         $ThreadJobUrl = 'https://psg-prod-eastus.azureedge.net/packages/threadjob.2.0.3.nupkg'
-        $ThreadJobNupkg = [System.IO.Path]::Combine($DeployTemp, ([System.IO.Path]::GetFileName($ThreadJobUrl)))
+        $ThreadJobNupkg = [System.IO.Path]::Combine($DeployTemp, ([System.IO.Path]::ChangeExtension(([System.IO.Path]::GetFileName($ThreadJobUrl)), '.zip')))
         $ThreadJobExtract = [System.IO.Path]::Combine($DeployTemp, [System.IO.Path]::GetFileNameWithoutExtension($ThreadJobUrl))
         $ThreadJobPSD1 = [System.IO.Path]::Combine($ThreadJobExtract, 'ThreadJob.psd1')
 
-        $webclient.DownloadFile($ThreadJobUrl, $ThreadJobNupkg)
+        $WebClient.DownloadFile($ThreadJobUrl, $ThreadJobNupkg)
         Expand-Archive -Path $ThreadJobNupkg -DestinationPath $ThreadJobExtract -Force
         Import-Module $ThreadJobPSD1
+
+        $WebClient.Dispose()
     }
 
     $KeyPath = 'registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\'
@@ -393,7 +395,9 @@ if ($Dcu) {
     if ($DCUexe) {
         @"
     & "$DCUexe" /applyUpdates -autoSuspendBitLocker=enable -reboot=disable
+
 "@ | & "$((Get-Process -Id $PID).Path)" -NonInteractive -NoProfile -Command -
+        Write-Output ''
     }
     else {
         Write-Error 'Unable to locate dcu-cli.exe'
@@ -401,7 +405,8 @@ if ($Dcu) {
 }
 
 
-& "$((Get-Process -Id $PID).Path)" -NonInteractive -NoProfile -Command {
+# & "$((Get-Process -Id $PID).Path)" -NonInteractive -NoProfile -Command
+$InvokePSWindowsUpdate = {
     try {
         Write-Verbose -Message 'Running PSWindowsUpdate to Install Windows Updates' -Verbose
         Import-Module -Global -Name PSWindowsUpdate
@@ -432,7 +437,8 @@ if ($Dcu) {
     # End current powershell session and return to primary
     exit
 }
-
+$PSWinUpdateArgs = ' -NonInteractive -NoProfile -Command {0}{2}{1}' -f '{', '}', $InvokePSWindowsUpdate
+Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList $PSWinUpdateArgs -Wait -Verb RunAs
 
 Write-Verbose 'Rebooting the computer is recommended' -Verbose
 Stop-Transcript
