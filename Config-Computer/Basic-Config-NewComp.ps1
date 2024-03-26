@@ -89,12 +89,13 @@ Set-PSResourceRepository -Name PSGallery -Trusted
 Install-PSResource -Name PowerShellGet -Prerelease -Scope AllUsers -PassThru
 
 #region Install Chocolatey
-$null = Invoke-Expression -Command ([System.Net.WebClient]::new().DownloadString('https://chocolatey.org/install.ps1'))
+if (-not (Get-Command choco.exe -ErrorAction Ignore)) {
+    $null = Invoke-Expression -Command ([System.Net.WebClient]::new().DownloadString('https://chocolatey.org/install.ps1'))
 
-$null = choco feature enable --name='useRememberedArgumentsForUpgrades'
-$null = choco feature enable --name='useEnhancedExitCodes'
-$null = choco feature enable --name='allowGlobalConfirmation'
-
+    $null = choco feature enable --name='useRememberedArgumentsForUpgrades'
+    $null = choco feature enable --name='useEnhancedExitCodes'
+    $null = choco feature enable --name='allowGlobalConfirmation'
+}
 #endregion
 
 #region Install drivers
@@ -103,6 +104,8 @@ switch ($CimBios.Manufacturer) {
     { $_ -match 'dell' } {
         Write-Verbose -Message 'Installing - Dell Command | Update' -Verbose
         choco install DellCommandUpdate --limit-output --no-progress
+        Write-Verbose -Message 'Setting variable so dcu-cli.exe will run later'
+        $Dcu = $true
         break
     }
 
@@ -279,56 +282,56 @@ Invoke-DownloadWallpaper -OutPath 'C:\Users\Default\Pictures\WallPapers'
 Get-Item -Path 'C:\Users\Default\Pictures\WallPapers' | Copy-Item -Destination ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyPictures)) -Recurse -PassThru -Force
 
 #endregion
-try {
-    $XamlPkgUrl = 'https://nuget.org/api/v2/package/Microsoft.UI.Xaml/2.7.0'
-    $xamlPkgPath = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.UI.Xaml.2.7.zip')
-    $xamlAppxPath = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.UI.Xaml.2.7\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.7.appx')
 
-    $VCLibsx64Url = 'https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx'
-    $VCLibsx64Path = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.VCLibs.x64.14.00.Desktop.appx')
-
-    $WinGetUrl = 'https://aka.ms/getwinget'
-    $WinGetPath = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle')
-
-    $WC = [System.Net.WebClient]::new()
-    $WC.DownloadFile($WinGetUrl, $WinGetPath)
-    $WC.DownloadFile($XamlPkgUrl, $xamlPkgPath)
-    $WC.DownloadFile($VCLibsx64Url, $VCLibsx64Path)
-
-    Expand-Archive -Path $xamlPkgPath -DestinationPath (Join-Path $DeployTemp 'Microsoft.UI.Xaml.2.7') -Force
-
-
+#region Install Winget
+if (-not (Get-Command winget -ErrorAction Ignore)) {
     try {
-        Add-AppxPackage -Path $xamlAppxPath
-        Add-AppxProvisionedPackage -Online -PackagePath $xamlAppxPath -SkipLicense
+        $XamlPkgUrl = 'https://nuget.org/api/v2/package/Microsoft.UI.Xaml/2.7.0'
+        $xamlPkgPath = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.UI.Xaml.2.7.zip')
+        $xamlAppxPath = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.UI.Xaml.2.7\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.7.appx')
+
+        $VCLibsx64Url = 'https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx'
+        $VCLibsx64Path = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.VCLibs.x64.14.00.Desktop.appx')
+
+        $WinGetUrl = 'https://aka.ms/getwinget'
+        $WinGetPath = [System.IO.Path]::Combine($DeployTemp, 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle')
+
+        $WC = [System.Net.WebClient]::new()
+        $WC.DownloadFile($WinGetUrl, $WinGetPath)
+        $WC.DownloadFile($XamlPkgUrl, $xamlPkgPath)
+        $WC.DownloadFile($VCLibsx64Url, $VCLibsx64Path)
+
+        Expand-Archive -Path $xamlPkgPath -DestinationPath (Join-Path $DeployTemp 'Microsoft.UI.Xaml.2.7') -Force
+
+        try {
+            Add-AppxPackage -Path $xamlAppxPath
+            Add-AppxProvisionedPackage -Online -PackagePath $xamlAppxPath -SkipLicense
+        }
+        catch {
+            . $Catch
+        }
+
+        try {
+            Add-AppxPackage -Path $VCLibsx64Path
+            Add-AppxProvisionedPackage -Online -PackagePath $VCLibsx64Path -SkipLicense
+        }
+        catch {
+            . $Catch
+        }
+
+        try {
+            Add-AppxPackage -Path $WinGetPath
+            Add-AppxProvisionedPackage -Online -PackagePath $WinGetPath -SkipLicense
+        }
+        catch {
+            . $Catch
+        }
     }
     catch {
         . $Catch
     }
-
-    try {
-        Add-AppxPackage -Path $VCLibsx64Path
-        Add-AppxProvisionedPackage -Online -PackagePath $VCLibsx64Path -SkipLicense
-    }
-    catch {
-        . $Catch
-    }
-
-
-
-    try {
-        Add-AppxPackage -Path $WinGetPath
-        Add-AppxProvisionedPackage -Online -PackagePath $WinGetPath -SkipLicense
-    }
-    catch {
-        . $Catch
-    }
+    Write-Progress -Completed -Activity 'Installing AppxPackages'
 }
-catch {
-    . $Catch
-}
-Write-Progress -Completed -Activity 'Installing AppxPackages'
-
 
 
 $null = New-Item -Path 'registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Feeds' -Force
@@ -357,16 +360,7 @@ try {
     $WC.DownloadFile($Url, $Dll)
     Import-Module -Name $Dll -ErrorAction Stop -Global
     $WallPaperPath = (Join-Path -Resolve -Path ([environment]::GetFolderPath([Environment+SpecialFolder]::MyPictures)) -ChildPath 'WallPapers')
-}
-catch {
-    . $Catch
-}
-finally {
-    $WC.Dispose()
-    Remove-Variable -Name WC -Force -ErrorAction SilentlyContinue
-}
 
-try {
     [Vanara.Windows.Shell.WallpaperManager]::SetSlideshow(
         $WallPaperPath,
         [Vanara.Windows.Shell.WallpaperFit]::Fill,
@@ -377,10 +371,15 @@ try {
 catch {
     . $Catch
 }
+finally {
+    $WC.Dispose()
+    Remove-Variable -Name WC -Force -ErrorAction SilentlyContinue
+}
+
 #endregion
 
 
-if ($DCUApplyUpdates) {
+if ($Dcu) {
 
     $DCUexe = Join-Path -Path $env:ProgramFiles, ${env:ProgramFiles(x86)} -ChildPath 'Dell\CommandUpdate\dcu-cli.exe' -Resolve -ErrorAction Ignore
     if ($DCUexe.Count -gt 1) {
@@ -394,7 +393,7 @@ if ($DCUApplyUpdates) {
     if ($DCUexe) {
         @"
     & "$DCUexe" /applyUpdates -autoSuspendBitLocker=enable -reboot=disable
-"@ | & "$((Get-Process -Id $PID).Path)" -NoProfile -Command -
+"@ | & "$((Get-Process -Id $PID).Path)" -NonInteractive -NoProfile -Command -
     }
     else {
         Write-Error 'Unable to locate dcu-cli.exe'
@@ -402,7 +401,7 @@ if ($DCUApplyUpdates) {
 }
 
 
-& "$((Get-Process -Id $PID).Path)" -NoProfile -Command {
+& "$((Get-Process -Id $PID).Path)" -NonInteractive -NoProfile -Command {
     try {
         Write-Verbose -Message 'Running PSWindowsUpdate to Install Windows Updates' -Verbose
         Import-Module -Global -Name PSWindowsUpdate
