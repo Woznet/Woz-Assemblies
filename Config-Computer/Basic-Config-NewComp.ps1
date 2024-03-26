@@ -65,7 +65,7 @@ Write-Verbose -Message 'Installing NuGet PackageProvider'
 $null = Install-PackageProvider -Name NuGet -Force
 
 Write-Verbose -Message 'Installing Modules: PackageManagement,PowerShellGet,PSReadLine,WozTools'
-$ModsToInstall = 'PackageManagement', 'PowerShellGet', 'WozTools', 'PSWindowsUpdate', 'PSReadLine', 'Az.Accounts', 'Az.Tools.Predictor', 'Microsoft.PowerShell.PSResourceGet'
+$ModsToInstall = 'PackageManagement', 'PowerShellGet', 'WozTools', 'PSWindowsUpdate', 'PSReadLine', 'Az.Accounts', 'Az.Tools.Predictor', 'Microsoft.PowerShell.PSResourceGet', 'ThreadJob'
 if (Get-Command -Name Find-PSResource -ErrorAction Ignore) {
     if (-not (Get-PSRepository -Name PSGallery -ErrorAction Ignore)) { $null = Register-PSResourceRepository -PSGallery -Trusted -PassThru -Force }
     Set-PSResourceRepository -Name PSGallery -Trusted
