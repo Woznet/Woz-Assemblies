@@ -1,7 +1,23 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingInvokeExpression', '')]
 param()
 
-$TranscriptPath = [System.IO.Path]::Combine('C:\temp\', 'Config-NewComp-{0}.log' -f [datetime]::Now.ToString('yyyy-MM-dd_HH-mm-ss'))
+
+##############
+
+Add-Type -AssemblyName System.Xml.Linq
+If (-not ([System.Security.Principal.WindowsPrincipal][System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    # Relaunch as an elevated process:
+    Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList '-File', ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+    exit
+}
+
+##############
+$DeployTemp = [System.IO.Path]::Combine('C:\temp', 'DeployTemp')
+
+# $DeployTemp = [System.IO.Path]::Combine($env:TEMP, 'DeployTemp')
+# $null = New-Item -Path $DeployTemp -ItemType Directory -Force
+
+$TranscriptPath = [System.IO.Path]::Combine($DeployTemp, 'Config-NewComp-{0}.log' -f [datetime]::Now.ToString('yyyy-MM-dd_HH-mm-ss'))
 Write-Verbose 'Starting Transcript'
 Start-Transcript -Path $TranscriptPath -IncludeInvocationHeader
 
@@ -20,14 +36,6 @@ $Catch = {
 }
 
 
-##############
-
-Add-Type -AssemblyName System.Xml.Linq
-If (-not ([System.Security.Principal.WindowsPrincipal][System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    # Relaunch as an elevated process:
-    Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList '-File', ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-    exit
-}
 
 Write-Verbose 'Setting Timezone to - Eastern Standard Time'
 $null = Set-TimeZone -Id 'Eastern Standard Time' -PassThru
@@ -331,7 +339,8 @@ $null = New-ItemProperty -Path 'registry::HKEY_CURRENT_USER\Software\Microsoft\O
 try {
     # $Url = 'https://raw.githubusercontent.com/Woznet/Woz-Assemblies/main/WozDev-SetSlideshow/Vanara.Windows.Shell.Common/Vanara.Windows.Shell.Common.dll'
     $Url = 'https://raw.githubusercontent.com/Woznet/Woz-Assemblies/main/WozDev-SetSlideshow/net48/WozDev-SetSlideshow.dll'
-    $Dll = [System.IO.Path]::Combine($env:TEMP, 'WozDev-SetSlideshow.dll')
+    # $Dll = [System.IO.Path]::Combine($env:TEMP, 'WozDev-SetSlideshow.dll')
+    $Dll = [System.IO.Path]::Combine($DeployTemp, 'WozDev-SetSlideshow.dll')
     $WC = [System.Net.WebClient]::new()
     $WC.DownloadFile($Url, $Dll)
     Import-Module -Name $Dll -ErrorAction Stop -Global
