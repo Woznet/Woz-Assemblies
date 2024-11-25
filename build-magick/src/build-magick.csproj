@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Core Metadata -->
+    <AssemblyName>build_magick</AssemblyName>
+    <RootNamespace>build_magick</RootNamespace>
+    <Authors>Woz</Authors> <!-- Your name or organization -->
+    <Company>WozDev</Company> <!-- Organization -->
+    <Description>Packages the Magick.NET dependencies for use in projects requiring image processing capabilities.</Description>
+    <PackageId>build-magick</PackageId> <!-- Unique Package ID -->
+    <Version>1.0.0</Version> <!-- SemVer format -->
+    <Copyright>Copyright (c) WozDev 2024</Copyright> <!-- Copyright notice -->
+    <RepositoryUrl>https://github.com/WozDev/build-magick</RepositoryUrl> <!-- Repository URL -->
+    <RepositoryType>git</RepositoryType> <!-- Repository type -->
+    <PackageTags>Magick.NET</PackageTags> <!-- Tags for discoverability -->
+    <PackageReadmeFile>README.md</PackageReadmeFile> <!-- Optional README -->
+
+    <!-- Packaging Settings -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild> <!-- Disabled for manual packing -->
+    <PackageOutputPath>./nupkg</PackageOutputPath> <!-- Same output path -->
+    <TargetFramework>netstandard2.0</TargetFramework> <!-- Broad compatibility -->
+
+    <!-- Additional Settings -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GeneratePathProperty>true</GeneratePathProperty>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<!-- Files to be included in nupkg file -->
+    <None Include="README.md">
+      <Pack>true</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="bin\Release\netstandard2.0\win-x64\Magick.NET.Core.dll">
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>Magick.NET-lib/netstandard2.0/</PackagePath>
+    </None>
+    <None Include="bin\Release\netstandard2.0\win-x64\Magick.NET-Q8-AnyCPU.dll">
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>Magick.NET-lib/netstandard2.0/</PackagePath>
+    </None>
+    <None Include="bin\Release\netstandard2.0\win-x64\Magick.Native-Q8-x64.dll">
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>Magick.NET-lib/netstandard2.0/</PackagePath>
+    </None>
+  </ItemGroup>
+
+<ItemGroup>
+    <!-- Package references for Magick.NET -->
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.2.0">
+      <IncludeAssets>all</IncludeAssets>
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Magick.NET.Core" Version="14.2.0">
+      <IncludeAssets>all</IncludeAssets>
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
