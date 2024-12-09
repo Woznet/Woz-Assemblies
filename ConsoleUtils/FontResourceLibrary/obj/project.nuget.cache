@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "hZFHkz7XVpS4i5F8CSszikZEPMGqWTqi+pmD2gyofEI0YU/si6M5JzlJbmln3yjfqtnhnbKPcyqWLQXndTSVzQ==",
+  "success": true,
+  "projectFilePath": "D:\\_dev\\DPad\\2024\\05.03\\dev\\ConsoleUtils\\FontResourceLibrary\\FontResourceLibrary.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\cwalker\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\cwalker\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

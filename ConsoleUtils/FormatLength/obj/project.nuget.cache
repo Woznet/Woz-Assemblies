@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "c6HPgzGKFmT9sPWfaE//QCtKf/aWBABPt6NXYTXdcKsH+yq3b8SWFUl3s79aavOIrmbqUuWuVX6Kdl8NqNs9Vg==",
+  "success": true,
+  "projectFilePath": "D:\\_dev\\DPad\\2024\\05.03\\dev\\ConsoleUtils\\FormatLength\\FormatLength.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\cwalker\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\cwalker\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
